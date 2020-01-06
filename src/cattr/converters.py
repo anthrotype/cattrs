@@ -11,6 +11,7 @@ from typing import (  # noqa: F401, imported for Mypy.
     Tuple,
     Type,
     TypeVar,
+    get_type_hints,
 )
 from ._compat import (
     bytes,
@@ -291,10 +292,12 @@ class Converter(object):
         # For public use.
         conv_obj = {}  # Start with a fresh dict, to ignore extra keys.
         dispatch = self._structure_func.dispatch
+        type_hints = get_type_hints(cl)
         for a in cl.__attrs_attrs__:  # type: ignore
-            # We detect the type by metadata.
-            type_ = a.type
             name = a.name
+            # We detect the type either by using type hints (for attrs classes
+            # that use auto_attribs=True) or the 'type' metadata.
+            type_ = type_hints.get(name, a.type)
 
             try:
                 val = obj[name]
